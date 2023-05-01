@@ -48,11 +48,7 @@ class Bird:
         elif d < 0:
             d -= 2 # extra tweek
         
-
-        print(d)
         self.y = self.y + d
-
-
 
         if d < 0 or self.y < self.height + 50:
             if self.tilt < self.MAX_ROTATION:
@@ -164,18 +160,23 @@ class Base:
 
 
 
-def draw_window(win, bird):
+def draw_window(win, bird, pipes, base):
     win.blit(BG_IMG, (0, 0))
+    for pipe in pipes:
+        pipe.draw(win)
+    base.draw(win)
     bird.draw(win)
     pygame.display.update()
 
 
 
 
-
-
 def main():
-    bird = Bird(200, 200)
+    bird = Bird(230, 350)
+    base = Base(730)
+    pipes = [Pipe(600)]
+    score = 0
+
     win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
     clock = pygame.time.Clock()
 
@@ -187,7 +188,30 @@ def main():
                 run = False
 
         #bird.move()
-        draw_window(win, bird)
+        add_pipe = False
+        rem = []
+        for pipe in pipes:
+            if pipe.collide(bird):
+                pass
+
+            if pipe.x + pipe.PIPE_TOP.get_width() < 0:
+                rem.append(pipe)
+            
+            if not pipe.passed and pipe.x < bird.x:
+                pipe.passed = True
+                add_pipe = True
+            
+            pipe.move()
+
+        if add_pipe:
+            score += 1
+            pipes.append(Pipe(600))
+
+        for r in rem:
+            pipes.remove(r)
+
+        base.move()
+        draw_window(win, bird, pipes, base)
         
 
     pygame.quit()
