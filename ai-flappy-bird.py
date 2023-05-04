@@ -9,6 +9,8 @@ pygame.font.init()
 WIN_WIDTH = 500
 WIN_HEIGHT = 800
 
+GEN = 0
+
 BIRD_IMGS = [pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird1.png"))),
              pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird2.png"))),
              pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird3.png")))]
@@ -164,13 +166,17 @@ class Base:
 
 
 
-def draw_window(win, birds, pipes, base, score):
+def draw_window(win, birds, pipes, base, score, gen):
     win.blit(BG_IMG, (0, 0))
     for pipe in pipes:
         pipe.draw(win)
 
     text = STAT_FONT.render("Score: " + str(score), 1, (255, 255, 255))
     win.blit(text, (WIN_WIDTH - 10 - text.get_width(), 10))
+
+    text = STAT_FONT.render("Gen: " + str(gen), 1, (255, 255, 255))
+    win.blit(text, (10, 10))
+
     base.draw(win)
     for bird in birds:
         bird.draw(win)
@@ -180,6 +186,11 @@ def draw_window(win, birds, pipes, base, score):
 
 
 def main(genomes, config): 
+    global GEN
+    GEN += 1
+
+
+
     nets = [] # list of neural network for each "genome" (bird)
     ge = [] # list of each genome
     birds = [] # list of birds for each genome
@@ -195,7 +206,6 @@ def main(genomes, config):
     base = Base(730)
     pipes = [Pipe(600)]
     score = 0
-
     win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
     clock = pygame.time.Clock()
 
@@ -213,9 +223,9 @@ def main(genomes, config):
         if len(birds) > 0: # if birds exist 
             if len(pipes) > 1 and birds[0].x > pipes[0].x + pipes[0].PIPE_TOP.get_width(): # 2 pipes and bird passed pipe
                 pipe_ind = 1 # focus on next pipe
-            else:
-                run = False
-                break
+        else:
+            run = False
+            break
 
         
         for x, bird in enumerate(birds):
@@ -267,12 +277,12 @@ def main(genomes, config):
 
 
         base.move()
-        draw_window(win, birds, pipes, base, score)
+        draw_window(win, birds, pipes, base, score, GEN)
         
 
 
 def run(config_path):
-    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+    config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                 neat.DefaultSpeciesSet, neat.DefaultStagnation,
                                 config_path)
     
